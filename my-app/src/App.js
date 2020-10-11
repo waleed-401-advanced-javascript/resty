@@ -24,6 +24,7 @@ class Form extends React.Component {
     };
   }
   handleClickGO = e => {
+    e.preventDefault();
     this.setState({url: this.state.urltemp});
     this.setState({ _method: this.state.methodtemp});
     // let data=`{url : ${this.state.urltemp}, _method : ${this.state.methodtemp}}`;
@@ -39,8 +40,8 @@ class Form extends React.Component {
     this.setState({urltemp:url}); // re-render 
   }
   render() {
-    return (<div><form>
-      <label>URL <input onChange={this.handleInput} /></label>
+    return (<div id="form-div"><form>
+      <label id="url">URL <input onChange={this.handleInput} /></label>
       <button onClick={this.handleClickGO} >GO</button>
       <br />
       <label id="label" htmlFor="get"> <input onChange={this.handleInputmethod}  className='radio' type="radio" id="get" name="btnselect"
@@ -52,8 +53,8 @@ class Form extends React.Component {
       <label id="label" htmlFor="delete"> <input onChange={this.handleInputmethod} className='radio'type="radio" id="delete" name="btnselect"
         value="delete"/>DELETE</label>
     </form>
-    <section>
-      <h3>{this.state._method} {this.state.url}</h3>
+    <section id="text-area">
+      <pre>{this.state._method}      {this.state.url}</pre>
     </section>     
     </div>
     );
