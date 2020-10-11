@@ -4,3 +4,22 @@
     height: 10px;
    
 }
+
+#text-area{
+    width: 90%;
+    height: 400px;
+    margin-left: 5%;
+    background-color: grey;
+}
+
+#form-div{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+form{
+ padding-top: 10px;
+ padding-bottom: 10px;
+}
+
