@@ -7,9 +7,13 @@
 
 #text-area{
     width: 90%;
-    height: 400px;
     margin-left: 5%;
     background-color: grey;
+   
+}
+#json{
+    height: 100%;
+    overflow: scroll;
 }
 
 #form-div{

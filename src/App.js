@@ -76,7 +76,7 @@ class Form extends React.Component {
     </form>
     <section id="text-area">
       <pre>{this.state._method}      {this.state.url}</pre>
-      <JSONPretty json={this.state.responseJson} />
+      <JSONPretty id="json" json={this.state.responseJson} />
     </section>
          
     </div>
