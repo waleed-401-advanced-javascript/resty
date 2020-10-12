@@ -4,6 +4,7 @@ import './reset.scss';
 import './header.scss';
 import './main.scss';
 import './footer.scss';
+import JSONPretty from 'react-json-prettify';
 const Header = () => {
   return <header><h1>RESTy</h1></header>;
 };
@@ -21,12 +22,32 @@ class Form extends React.Component {
       _method: '',
       urltemp:'',
       methodtemp:'',
+      responseJson: {},
     };
+  }
+  fetchData = () => {
+    console.log("fetch", this.state.methodtemp, this.state.urltemp);
+    fetch(this.state.urltemp,{
+      method: this.state.methodtemp || "get",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+     .then(async (res) => {
+      const obj = {};
+      for (let [key, value] of res.headers.entries()) {
+        obj[key] = value;
+      }
+       const resJson = await res.json();
+       this.setState({ responseJson: { Headers: obj, Response: resJson }});
+     })
   }
   handleClickGO = e => {
     e.preventDefault();
     this.setState({url: this.state.urltemp});
     this.setState({ _method: this.state.methodtemp});
+    this.fetchData();
+   
     // let data=`{url : ${this.state.urltemp}, _method : ${this.state.methodtemp}}`;
   // this.request.push(this.data);
   }
@@ -55,7 +76,9 @@ class Form extends React.Component {
     </form>
     <section id="text-area">
       <pre>{this.state._method}      {this.state.url}</pre>
-    </section>     
+      <JSONPretty json={this.state.responseJson} />
+    </section>
+         
     </div>
     );
   }
@@ -64,9 +87,15 @@ class App extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <Header />
+        <div id="page-container">
+   <div id="content-wrap">
+   <Header />
         <Form />
-        <Footer />
+   </div>
+   <footer id="footer">
+   <Footer />
+   </footer>
+ </div>  
       </React.Fragment>
     );
   }
