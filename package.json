@@ -13,7 +13,8 @@
     "react-dom": "^16.13.1",
     "react-json-prettify": "^0.2.0",
     "react-json-pretty": "^2.2.0",
-    "react-scripts": "3.4.3"
+    "react-scripts": "3.4.3",
+    "react-step-progress-bar": "^1.0.3"
   },
   "scripts": {
     "start": "react-scripts start",
