@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import './reset.scss';
-// import Footer from './Component/footer/footer'
+import Footer from './component/footer/footer';
 import Header from './component/header/header';
 import Form from './component/form/form';
 
@@ -11,7 +11,7 @@ class App extends React.Component {
       <React.Fragment>
         <Header />
         <Form />
-        {/* <Footer /> */}
+        <Footer /> 
       </React.Fragment>
     );
   }

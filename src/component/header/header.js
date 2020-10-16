@@ -1,5 +1,13 @@
-import React from 'react';
+import React, { Component } from 'react';
+
 import './header.scss';
-export default function Header() {
-  return <header><h1>RESTy</h1></header>;
+
+export default class Header extends Component {
+  render(){
+    return (
+      <header data-testid="header" className="header">
+        <h1>RESTy</h1>
+      </header>
+    );
+  }
 }

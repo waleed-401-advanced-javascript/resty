@@ -1,130 +1,98 @@
-import JSONPretty from 'react-json-prettify';
-import React from 'react';
+import React, { Component } from 'react';
+
+import Results from '../results/results';
+import History from '../history/history';
+
 import './form.scss';
-import History from '../handlehistory/handlehistory';
-import TextArea from '../post/textarea';
-export default class Form extends React.Component {
+
+export default class Form extends Component {
   constructor(props) {
     super(props);
-    // init state
     this.state = {
-      urltemp: '',
-      methodtemp: '',
+      method: 'GET',
       url: '',
-      _method: '',
+      reqBody: '',
+      goMethod: '',
+      goUrl: '',
+      goBody: '',
       responseJson: {},
-      body :'',
-      data : '',
-      history:[],
+      history: [],
+      isLoading: false,
     };
+    this.selectItem = this.selectItem.bind(this);
   }
-    fetchData = () => {
-      console.log('fetch', this.state._method, this.state.url);
-      fetch(this.state.url, {
-        _method: 'get',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-        .then(async (res) => {
-          const obj = {};
-          //console.log('res : ', await res.json())
-          for (let [key, value] of res.headers.entries()) {
-            obj[key] = value;
-            console.log('obj : ', obj);
-          }
-          const resJson = await res.json();
-          // console.log('resJson : ' ,resJson);
-          this.setState({ responseJson: { Headers: obj, Response: resJson } });
-          this.state.history.push(<li><History method={this.state._method}  url={this.state.url} body={this.state.body}/></li>);
-          let history=this.state.history;
-          this.setState({history});
-          let local = JSON.parse(localStorage.getItem('history'));
-          local.push({url: this.state.url,method:this.state._method, body:this.state.body});
-          localStorage.setItem('history',JSON.stringify(local));
-        });
-    }
-    handleClickGO = e => {
-      e.preventDefault();
-      console.log('before', this.state);
-      this.setState({ _method: this.state.methodtemp });
-      this.setState({ url: this.state.urltemp }, () => {
-        console.log('after', this.state);
-        if (this.state._method === 'get') {
-          this.fetchData();
-        }
-        else {
-          this.addcontact();
-        }
-      });
-    }
-    addcontact(){
-      fetch(this.state.urltemp,{
-        method:'post',
-        headers:{'content-type':'application/json',mode:'no-cors','Access-Control-Allow-Origin': 'http://localhost:3000','Access-Control-Allow-Credentials':'true'},
-        body: JSON.stringify(this.state.data),
-    
-      }).then(()=>{
-        fetch(this.state.urltemp )
-          .then(response => response.json())
-          .then(result =>{
-            console.log('result',result);
-            this.setState({
-              responseJson:result,
-            });
-          }).catch(e=>console.log(e));
-      });
-    }
-    handleInputmethod = e => {
-      let method = e.target.value;
-      console.log('method : ', method);
-      this.setState({ methodtemp: method });
-    }
-    handleInput = e => {
-      let url = e.target.value;
-      console.log('url : ', url);
-      this.setState({ urltemp: url }); // re-render 
-    }
-    componentDidMount() {
-      if (!JSON.parse(localStorage.getItem('history'))){
-        localStorage.setItem('history',JSON.stringify([]));
+
+  componentWillMount(){
+    this.setState({history: JSON.parse(localStorage.getItem('history')) || []});
+  }
+
+fetchData = () => {
+  console.log('fetch', this.state.method, this.state.url);
+  this.setState({ isLoading: true });
+  fetch(this.state.url,{
+    method: this.state.method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: this.state.reqBody ?  JSON.stringify(this.state.reqBody) : undefined,
+  })
+    .then(async (res) => {
+      const obj = {};
+      for (let [key, value] of res.headers.entries()) {
+        obj[key] = value;
       }
-      let history =  JSON.parse(localStorage.getItem('history')).map((item,index)=>{
-        return(
-          <History method={item.method}  url={item.url} body={item.body}/>
-        ); 
-      });
-      this.setState({ history });
-    }
-    
-    render() {
-      return (<div><form onSubmit={this.handleClickGO}>
-        <legend>URL</legend>
-        <label>URL <input onChange={this.handleInput} /></label>
-        <button type="submit" >GO</button>
-        <br />
-        <label id="label" htmlFor="get"> <input onChange={this.handleInputmethod} className='radio-in' type="radio" id="get" name="btnselect"
-          value="get" />GET</label>
-        <label id="label" htmlFor="post"> <input onChange={this.handleInputmethod} className='radio-in' type="radio" id="post" name="btnselect"
-          value="post" />POST</label>
-        <label id="label" htmlFor="put"> <input onChange={this.handleInputmethod} className='radio-in' type="radio" id="put" name="btnselect"
-          value="put" />PUT</label>
-        <label id="label" htmlFor="delete"> <input onChange={this.handleInputmethod} className='radio-in' type="radio" id="delete" name="btnselect"
-          value="delete" />DELETE</label>
+      const resJson = await res.json();
+      this.setState({ isLoading: false, responseJson: { Headers: obj, Response: resJson }, history: [...this.state.history, { method:this.state.method, url: this.state.url, reqBody: this.state.reqBody }]});
+      localStorage.setItem('history', JSON.stringify(this.state.history));
+    });
+}
+
+onChangeMethod = e => { this.setState({ method: e.target.value }); }
+onChangeUrl = e => this.setState({ url: e.target.value });
+onChangeBody = e => this.setState({ reqBody: e.target.value });
+
+printUrlAndMethod = e => {
+  e.preventDefault();
+  this.setState({ goMethod: this.state.method, goUrl: this.state.url, goBody: this.state.reqBody });
+  this.fetchData();
+};
+
+selectItem(i){
+  const item = this.state.history[i];
+  this.setState({ method: item.method, url: item.url, reqBody: item.reqBody });
+}
+
+render() {
+  return (
+    <div >
+      <form onSubmit={this.printUrlAndMethod} className="form">
+        <br/>
+        <br/>
+        <br/>
+        <input name="url" value={this.state.url} placeholder="http://" onChange={this.onChangeUrl} />
+        <br/>
+        <input checked={this.state.method === 'GET'} type="radio" value="GET" name="method" onChange={this.onChangeMethod} />
+        <label htmlFor="GET">GET</label>
+        <input checked={this.state.method === 'POST'} type="radio" value="POST" name="method" onChange={this.onChangeMethod} />
+        <label htmlFor="POST">POST</label>
+        <input checked={this.state.method === 'PUT'} type="radio" value="PUT" name="method" onChange={this.onChangeMethod} />
+        <label htmlFor="PUT">PUT</label>
+        <input checked={this.state.method === 'DELETE'} type="radio" value="DELETE" name="method" onChange={this.onChangeMethod} />
+        <label htmlFor="DELETE">DELETE</label>
+        <br/>
+        <br/>
+        <textarea name="reqBody" onChange={this.onChangeBody} value={this.state.reqBody}/>
+        <br/>
+        <button type="submit">Go</button>
       </form>
-      <section>
-        <TextArea/>
-      </section>
-      <section>
-        <ul>
-          {this.state.history}
-        </ul>
-      </section>
-      <section>
-        <h3>{this.state._method} {this.state.url}</h3>
-        <JSONPretty json={this.state.responseJson} />
-      </section>
+      <div>
+        <span>{this.state.goMethod} &nbsp; {this.state.goUrl} </span>
       </div>
-      );
-    }
+      <div style={{ float: 'left' }}>
+        <History selectItem={this.selectItem} items={this.state.history} />
+        { this.state.isLoading ? <h1>Loading</h1> : <Results json={this.state.responseJson} />}
+      </div>
+    </div>
+  );
+}
 }
