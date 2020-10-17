@@ -1,7 +1,7 @@
+'strict mode';
 import React, { Component } from 'react';
 
 import Results from '../results/results';
-import History from '../history/history';
 
 import './form.scss';
 
@@ -12,29 +12,40 @@ export default class Form extends Component {
       method: 'GET',
       url: '',
       reqBody: '',
-      goMethod: '',
-      goUrl: '',
-      goBody: '',
       responseJson: {},
-      history: [],
       isLoading: false,
+      history: [],
     };
-    this.selectItem = this.selectItem.bind(this);
   }
 
   componentWillMount(){
     this.setState({history: JSON.parse(localStorage.getItem('history')) || []});
   }
 
-fetchData = () => {
-  console.log('fetch', this.state.method, this.state.url);
+  componentDidMount(){
+    const selectedItem = this.props.selectedItem;
+    console.log('form selectedItem', selectedItem);
+    if (selectedItem){
+      const item = this.state.history[selectedItem];
+      console.log(item);
+      if (item){
+        this.setState({ method: item.method, url: item.url, reqBody: item.reqBody });
+        this.fetchData(item.method, item.url, item.reqBody);
+      }
+    }
+  }
+
+fetchData = (method, url, reqBody) => {
+  const fetchMethod = this.state.method || method;
+  const fetchUrl = this.state.url || url;
+  const fetchReqBody = this.state.reqBody || reqBody;
   this.setState({ isLoading: true });
-  fetch(this.state.url,{
-    method: this.state.method,
+  fetch(fetchUrl,{
+    method: fetchMethod,
     headers: {
       'Content-Type': 'application/json',
     },
-    body: this.state.reqBody ?  JSON.stringify(this.state.reqBody) : undefined,
+    body: fetchReqBody ?  JSON.stringify(this.state.reqBody) : undefined,
   })
     .then(async (res) => {
       const obj = {};
@@ -44,23 +55,29 @@ fetchData = () => {
       const resJson = await res.json();
       this.setState({ isLoading: false, responseJson: { Headers: obj, Response: resJson }, history: [...this.state.history, { method:this.state.method, url: this.state.url, reqBody: this.state.reqBody }]});
       localStorage.setItem('history', JSON.stringify(this.state.history));
+    }).catch((err) => {
+      this.setState({ isLoading: false, responseJson: {error: 'check the console'} });
     });
 }
 
-onChangeMethod = e => { this.setState({ method: e.target.value }); }
-onChangeUrl = e => this.setState({ url: e.target.value });
-onChangeBody = e => this.setState({ reqBody: e.target.value });
+onChangeMethod = e => {
+  this.setState({ responseJson: {} });
+  this.setState({ method: e.target.value });
+}
+onChangeUrl = e => {
+  this.setState({ responseJson: {} });
+  this.setState({ url: e.target.value });
+}
+onChangeBody = e => {
+  this.setState({ responseJson: {} });
+  this.setState({ reqBody: e.target.value });
+}
 
 printUrlAndMethod = e => {
   e.preventDefault();
   this.setState({ goMethod: this.state.method, goUrl: this.state.url, goBody: this.state.reqBody });
   this.fetchData();
 };
-
-selectItem(i){
-  const item = this.state.history[i];
-  this.setState({ method: item.method, url: item.url, reqBody: item.reqBody });
-}
 
 render() {
   return (
@@ -89,8 +106,7 @@ render() {
         <span>{this.state.goMethod} &nbsp; {this.state.goUrl} </span>
       </div>
       <div style={{ float: 'left' }}>
-        <History selectItem={this.selectItem} items={this.state.history} />
-        { this.state.isLoading ? <h1>Loading</h1> : <Results json={this.state.responseJson} />}
+        { this.state.isLoading ?<iframe src={'https://giphy.com/embed/ZBQhoZC0nqknSviPqT'}></iframe> : <Results json={this.state.responseJson} />}
       </div>
     </div>
   );
